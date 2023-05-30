@@ -1,0 +1,3 @@
+*.docx
+*.log
+gurobipy_test.py
