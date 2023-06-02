@@ -55,4 +55,4 @@ np.save("solutions/0/y.npy", y)
 
 results_dict = {"family_id": range(nb_families), "assigned_day": assignment.astype(int)}
 results_df = pd.DataFrame(results_dict)
-results_df.to_csv("solutions/first_submission.csv", index=False)
+results_df.to_csv("solutions/second_submission.csv", index=False)

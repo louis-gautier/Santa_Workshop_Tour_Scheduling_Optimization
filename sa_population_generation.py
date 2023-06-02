@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 
 # Util functions
 preferences_df = pd.read_csv("data/family_data.csv")
@@ -37,19 +38,17 @@ y_onehot = np.load("solutions/0/y.npy")
 y = np.argwhere(y_onehot)[:,1:]
 overflow_onehot = np.load("solutions/0/overflow.npy")
 overflow = np.nonzero(overflow_onehot)[1]
-N = 10000
+population_size = 100
+save_freq = 25
+save_folder = "solutions/ga_initialization/"
 
-def T(n, T0=5, Tf=0.001, n_decay=N):
+def T(n, T0=5, Tf=0.001, n_decay=save_freq*population_size*4):
     # Linear temperature decay
     return T0 + (n/n_decay)*(Tf-T0)
 n = 0
 objective_value = 6.9341431520841768e+04
-print_freq = 25
-objective_sequence = np.zeros(N)
-best_objective = objective_value
-saved_solution = False
 while True:
-    if n == N:
+    if n == save_freq*population_size + 1:
         break
     # Find a swap to try to perform between two preferences
     family1, family2 = np.random.choice(5000, 2, replace=False)
@@ -225,20 +224,14 @@ while True:
     
     
     objective_value += deltaE
-    if n % print_freq == 0:
+    if n % save_freq == 0:
+        save_idx = n // save_freq
         print("Iteration "+str(n)+": current objective: "+str(objective_value))
-    if n > 0 and objective_value < best_objective:
-        print("Best objective so far: "+str(objective_value))
-        saved_solution = True
-        np.save("solutions/sa/2/x.npy", x)
-        np.save("solutions/sa/2/overflow.npy", overflow)
-        np.save("solutions/sa/2/y.npy", y)
-        best_objective = objective_value
-    objective_sequence[n] = objective_value
+        current_saving_folder = os.path.join(save_folder, str(save_idx))
+        os.makedirs(current_saving_folder)
+        np.save(os.path.join(current_saving_folder, "x.npy"), x)
+        np.save(os.path.join(current_saving_folder, "overflow.npy"), overflow)
+        np.save(os.path.join(current_saving_folder, "y.npy"), y)
+        with open(os.path.join(current_saving_folder, "objective.txt"), "w") as f:
+            f.write(str(objective_value))
     n += 1
-
-np.save("solutions/sa/objective_sequence.npy", objective_sequence)
-if not saved_solution:
-    np.save("solutions/sa/2/x.npy", x)
-    np.save("solutions/sa/2/overflow.npy", overflow)
-    np.save("solutions/sa/2/y.npy", y)
