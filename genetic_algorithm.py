@@ -154,11 +154,7 @@ def mutate(solution_population, individual):
         elif new_day > 0:
             new_y_coefficients[new_day-1][1] += family_size
         deltaE_preference = preference_cost(new_pref, family_size) - preference_cost(old_pref, family_size)
-        print(past_y_coefficients)
-        print(new_y_coefficients)
         deltaE_accounting = np.sum([accounting_cost(nd + 125, ndplus1 + 125) for (nd, ndplus1) in new_y_coefficients.values()]) - np.sum([accounting_cost(nd + 125, ndplus1 + 125) for (nd, ndplus1) in past_y_coefficients.values()])
-        print(deltaE_accounting)
-        print("---")
         deltaE = deltaE_preference + deltaE_accounting
         for idx, tab in new_y_coefficients.items():
             y[idx,:] = tab
@@ -177,34 +173,48 @@ def mutate(solution_population, individual):
 
 def save_best_solution(solution_population, iteration, best_so_far):
     best_solution = min(solution_population, key=custom_sort_key)
+    mean_pop = np.mean(np.array(list(map(custom_sort_key, solution_population))))
+    std_pop = np.std(np.array(list(map(custom_sort_key, solution_population))))
     if best_solution["objective"] < best_so_far:
         np.save("solutions/ga/0/x.npy", best_solution["x"])
         np.save("solutions/ga/0/overflow.npy", best_solution["overflow"])
         np.save("solutions/ga/0/y.npy", best_solution["y"])
         best_so_far = best_solution["objective"]
+    print("Mean objective in the population at iteration "+str(iteration)+": "+str(mean_pop))
+    print("Std objective in the population at iteration "+str(iteration)+": "+str(std_pop))
     print("Best objective in the population at iteration "+str(iteration)+": "+str(best_solution["objective"]))
-    objectives = [d["objective"] for d in solution_population]
-    print("Mean objective in the population at iteration "+str(iteration)+": "+str(np.mean(objectives)))
     return best_so_far
 
 solution_population = initialize_population()
 previous_solution_population = None
 n = 0
-best_objective = 6.9341431520841768e+04
+best_objective = min(solution_population, key=custom_sort_key)["objective"]
+nb_trials = 100
 while True:
     solution_population = select(solution_population)
+    best_objective = save_best_solution(solution_population, n, best_objective)
     if previous_solution_population is not None and sorted(solution_population, key=custom_sort_key) == sorted(previous_solution_population, key=custom_sort_key):
         break
+    previous_solution_population = solution_population
     for crossover_idx in range(population_size):
         crossover_success = False
-        while not crossover_success:
-            parent1, parent2 = np.random.choice(range(len(solution_population)), size=2, replace=False)
+        parent1, parent2 = np.random.choice(range(population_size), size=2, replace=False)
+        trial_idx = 0
+        while trial_idx <= nb_trials and not crossover_success:
             crossover_success, solution_population = crossover(solution_population, parent1, parent2)
-    for mutate_idx in range(int(0.1*population_size)):
+            trial_idx += 1
+        if trial_idx >= nb_trials:
+            print("crossover failure between "+str(parent1)+" and "+str(parent2))
+    
+    for mutate_idx in range(int(0.3*population_size)):
         mutate_success = False
-        while not mutate_success:
-            individual = np.random.randint(0, len(solution_population))
+        individual = np.random.randint(0, len(solution_population))
+        trial_idx = 0
+        while trial_idx <= nb_trials and not mutate_success:
             mutate_success, solution_population = mutate(solution_population, individual)
+            trial_idx += 1
+        if trial_idx >= nb_trials:
+            print("mutate failure for "+str(individual))
     best_objective = save_best_solution(solution_population, n, best_objective)
-    previous_solution_population = solution_population
+    
     n += 1

@@ -39,10 +39,10 @@ y = np.argwhere(y_onehot)[:,1:]
 overflow_onehot = np.load("solutions/0/overflow.npy")
 overflow = np.nonzero(overflow_onehot)[1]
 population_size = 100
-save_freq = 25
+save_freq = 50
 save_folder = "solutions/ga_initialization/"
 
-def T(n, T0=5, Tf=0.001, n_decay=save_freq*population_size*4):
+def T(n, T0=7.5, Tf=0.005, n_decay=save_freq*population_size*4):
     # Linear temperature decay
     return T0 + (n/n_decay)*(Tf-T0)
 n = 0
