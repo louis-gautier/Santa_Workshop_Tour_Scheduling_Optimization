@@ -18,7 +18,7 @@ pref = family_data.filter(like="choice").to_numpy() - 1
 
 # Neighborhood search parameters
 AC_thresh = 27226
-TR = 70
+TR = 120
 x_init,y_init,z_init,overflow_init,assignment_init = read_solution("solutions/basic_MIP_model.sol")
 
 P = np.ones((n_fam,n_days)) # initialize matrix
