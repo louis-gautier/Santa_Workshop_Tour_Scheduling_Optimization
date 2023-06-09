@@ -4,3 +4,6 @@ gurobipy_test.py
 *.npy
 *.txt
 *.csv
+*.zip
+*.pdf
+visualizations/genetic_algorithm_profile.py

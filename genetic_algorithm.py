@@ -171,7 +171,7 @@ def mutate(solution_population, individual):
     else:
         return False, solution_population
 
-def save_best_solution(solution_population, iteration, best_so_far):
+def save_best_solution(solution_population, iteration, best_so_far, means, stds, bests):
     best_solution = min(solution_population, key=custom_sort_key)
     mean_pop = np.mean(np.array(list(map(custom_sort_key, solution_population))))
     std_pop = np.std(np.array(list(map(custom_sort_key, solution_population))))
@@ -180,19 +180,25 @@ def save_best_solution(solution_population, iteration, best_so_far):
         np.save("solutions/ga/0/overflow.npy", best_solution["overflow"])
         np.save("solutions/ga/0/y.npy", best_solution["y"])
         best_so_far = best_solution["objective"]
+    means.append(mean_pop)
     print("Mean objective in the population at iteration "+str(iteration)+": "+str(mean_pop))
+    stds.append(std_pop)
     print("Std objective in the population at iteration "+str(iteration)+": "+str(std_pop))
+    bests.append(best_solution["objective"])
     print("Best objective in the population at iteration "+str(iteration)+": "+str(best_solution["objective"]))
     return best_so_far
 
 solution_population = initialize_population()
+means = []
+stds = []
+bests = []
 previous_solution_population = None
 n = 0
 best_objective = min(solution_population, key=custom_sort_key)["objective"]
 nb_trials = 100
-while True:
+while n <=1000:
     solution_population = select(solution_population)
-    best_objective = save_best_solution(solution_population, n, best_objective)
+    best_objective = save_best_solution(solution_population, n, best_objective, means, stds, bests)
     if previous_solution_population is not None and sorted(solution_population, key=custom_sort_key) == sorted(previous_solution_population, key=custom_sort_key):
         break
     previous_solution_population = solution_population
@@ -215,6 +221,9 @@ while True:
             trial_idx += 1
         if trial_idx >= nb_trials:
             print("mutate failure for "+str(individual))
-    best_objective = save_best_solution(solution_population, n, best_objective)
     
     n += 1
+
+np.save("solutions/ga_data/means.npy", np.array(means))
+np.save("solutions/ga_data/stds.npy", np.array(stds))
+np.save("solutions/ga_data/bests.npy", np.array(bests))

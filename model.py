@@ -62,5 +62,6 @@ model.addConstr(gp.quicksum((i+125)*y[d,i,j] for d in range(nb_days) for i in ra
 # Save intermediary solutions
 model.setParam('OutputFlag', 1)
 model.setParam('ResultFile', 'solutions/basic_MIP_model.sol')
+model.setParam('TimeLimit', 12*3600)
 
 model.optimize()
