@@ -5,5 +5,4 @@ gurobipy_test.py
 *.txt
 *.csv
 *.zip
-*.pdf
 visualizations/genetic_algorithm_profile.py
